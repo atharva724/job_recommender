@@ -14,12 +14,13 @@ def index():
 
 @app.route('/search')
 def search_ui():
-    return render_template('search.html')
+    return render_template('search.html', search_results=None)
 
 @app.route('/recommend', methods = ['post'])
 def recommend():
     user_input = request.form['user_input']
 
+    user_input = user_input.lower()
     if user_input in jobs['Post'].values:
         index = np.where(jobs['Post'] == user_input)[0][0]
         similar_jobs = sorted(list(enumerate(similarity1[index])), key=lambda x: x[1], reverse=True)[1:10]
@@ -30,10 +31,13 @@ def recommend():
         index = np.where(jobs['Job_Domain'] == user_input)[0][0]
         similar_jobs = sorted(list(enumerate(similarity1[index])), key=lambda x: x[1], reverse=True)[1:10]
 
+    search_results = []
     for i in similar_jobs:
-        print(jobs.iloc[i[0]], '\n')
+        job = jobs.iloc[i[0]]
+        search_results.append({'Company': job['Company'], 'Post': job['Post'], 'Location': job['Location'], 'Job_Domain': job['Job_Domain'],
+                               'Salary': job['Salary']})
 
-    return str(user_input)
+    return render_template('search.html', search_results=search_results)
 
 if __name__ == '__main__':
     app.run(debug = True)
