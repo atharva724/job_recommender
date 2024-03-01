@@ -18,10 +18,14 @@ def search_ui():
 
 @app.route('/recommend', methods = ['post'])
 def recommend():
-    user_input = request.form['user_input']
+    user_input = request.form['user_input'].lower()
 
-    user_input = user_input.lower()
-    if user_input in jobs['Post'].values:
+    if user_input not in jobs['Post'].values \
+            and user_input not in jobs['Location'].values \
+            and user_input not in jobs['Job_Domain'].values:
+        error_message = "Entered value not found in the dataset."
+        return render_template('search.html', error_message=error_message)
+    elif user_input in jobs['Post'].values:
         index = np.where(jobs['Post'] == user_input)[0][0]
         similar_jobs = sorted(list(enumerate(similarity1[index])), key=lambda x: x[1], reverse=True)[1:10]
     elif user_input in jobs['Location'].values:
@@ -38,6 +42,8 @@ def recommend():
                                'Salary': job['Salary']})
 
     return render_template('search.html', search_results=search_results)
+
+
 
 if __name__ == '__main__':
     app.run(debug = True)
